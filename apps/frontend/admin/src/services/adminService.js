@@ -142,16 +142,25 @@ export const adminService = {
 
   submitAttendance: async (session, records) => {
     const today = getTodayKolkataDateStr()
-    
-    const response = await api.get(`/attendance?date=${today}&session=${session}`)
+    return adminService.submitAttendanceForDate(today, session, records)
+  },
+
+  submitAttendanceForDate: async (dateStr, session, records, studentsList = null) => {
+    const response = await api.get(`/attendance?date=${dateStr}&session=${session}`)
     const existingList = Array.isArray(response.data) ? response.data : (response || [])
     
-    const studentsRes = await api.get('/students')
-    const students = Array.isArray(studentsRes.data) ? studentsRes.data : (studentsRes || [])
+    let students = studentsList
+    if (!students) {
+      const studentsRes = await api.get('/students')
+      students = Array.isArray(studentsRes.data) ? studentsRes.data : (studentsRes || [])
+    }
     
     const regToIdMap = {}
     students.forEach(s => {
-      regToIdMap[String(s.register_number)] = String(s.id)
+      if (s.register_number || s.registerNumber) {
+        regToIdMap[String(s.register_number || s.registerNumber)] = String(s.id)
+      }
+      regToIdMap[String(s.id)] = String(s.id)
     })
     
     for (const record of records) {
@@ -161,12 +170,12 @@ export const adminService = {
       const payload = {
         student_id: numericId,
         status: record.status,
-        date: today,
+        date: dateStr,
         session: session.toUpperCase()
       }
       
       if (existing) {
-        await api.put(`/attendance/${existing.id}`, { status: record.status, session: session.toUpperCase() })
+        await api.put(`/attendance/${existing.id}`, { status: record.status, session: session.toUpperCase(), date: dateStr })
       } else {
         await api.post(`/attendance`, payload)
       }

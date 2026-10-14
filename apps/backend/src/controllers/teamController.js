@@ -6,6 +6,11 @@ const { authenticate } = require("../middleware/authMiddleware");
 
 const getTeamByStudentId = async (req, res, studentId) => {
   try {
+    // Guard: reject non-numeric or missing studentId before hitting DB
+    if (!studentId || isNaN(parseInt(studentId, 10))) {
+      const { sendError } = require("../utils/response");
+      return sendError(res, 400, "Invalid student ID", "VALIDATION_ERROR");
+    }
     const result = await teamService.getTeamByStudentId(studentId);
     return sendSuccess(res, 200, "Student team retrieved successfully", result);
   } catch (err) {

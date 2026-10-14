@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { User, Mail, Phone, Github, Hash, Edit3, Save, X, ExternalLink } from 'lucide-react'
+import { User, Mail, Phone, Github, Hash, Edit3, Save, X, ExternalLink, AlertCircle } from 'lucide-react'
 import { profileService } from '../services/profileService'
 
 export default function Profile() {
@@ -8,15 +8,22 @@ export default function Profile() {
   const [form, setForm] = useState({})
   const [saving, setSaving] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [successMsg, setSuccessMsg] = useState('')
 
-  useEffect(() => {
-    profileService.get().then(p => {
-      setProfile(p)
-      setForm({ name: p.name, email: p.email, phone: p.phone, github: p.github })
-      setLoading(false)
-    })
-  }, [])
+  const loadProfile = () => {
+    setLoading(true)
+    setError(null)
+    profileService.get()
+      .then(p => {
+        setProfile(p)
+        setForm({ name: p.name, email: p.email, phone: p.phone, github: p.github })
+      })
+      .catch(err => setError(err.message || 'Failed to load profile'))
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(() => { loadProfile() }, [])
 
   const handleSave = async () => {
     setSaving(true)
@@ -41,6 +48,16 @@ export default function Profile() {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="card p-6 border border-red-200 text-center space-y-4 max-w-md mx-auto mt-10">
+        <AlertCircle className="w-8 h-8 text-red-400 mx-auto" />
+        <p className="text-red-500 font-semibold">{error}</p>
+        <button onClick={loadProfile} className="btn-primary text-xs px-4 py-2">Try Again</button>
       </div>
     )
   }

@@ -23,6 +23,7 @@ const normalizeTask = (t) => {
 export const assignedTaskService = {
   getAll: async () => {
     const studentId = await getStudentDbId()
+    if (!studentId) return []
     try {
       const response = await api.get(`/assigned-tasks?student_id=${studentId}`)
       const list = Array.isArray(response.data) ? response.data : (response || [])

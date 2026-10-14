@@ -61,7 +61,11 @@ export default function Attendance() {
         ))).sort((a, b) => new Date(b) - new Date(a))
         setAvailableMonths(uniqueMonths)
       }
-      
+    })
+    .catch(err => {
+      console.error('Failed to load attendance data:', err)
+    })
+    .finally(() => {
       setLoading(false)
     })
   }, [])

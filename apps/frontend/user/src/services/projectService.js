@@ -61,6 +61,7 @@ const normalizeUpdate = (upd) => {
 export const projectService = {
   get: async () => {
     const studentId = await getStudentDbId()
+    if (!studentId) return null
     try {
       const response = await api.get(`/teams/student/${studentId}`)
       const team = response.data || response
@@ -74,6 +75,7 @@ export const projectService = {
 
   getUpdates: async () => {
     const studentId = await getStudentDbId()
+    if (!studentId) return []
     try {
       const teamRes = await api.get(`/teams/student/${studentId}`)
       const team = teamRes.data || teamRes

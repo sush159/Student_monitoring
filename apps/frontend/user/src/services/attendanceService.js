@@ -3,6 +3,7 @@ import { api, getStudentDbId } from './api'
 export const attendanceService = {
   getAll: async () => {
     const studentId = await getStudentDbId()
+    if (!studentId) return []
     const response = await api.get(`/attendance?student_id=${studentId}`)
     const list = Array.isArray(response.data) ? response.data : (response || [])
     

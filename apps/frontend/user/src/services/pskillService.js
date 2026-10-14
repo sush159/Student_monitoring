@@ -3,6 +3,7 @@ import { api, getStudentDbId } from './api'
 export const pskillService = {
   getAll: async () => {
     const studentId = await getStudentDbId()
+    if (!studentId) return []
     
     // 1. Fetch catalog of all P-Skills
     const catalogRes = await api.get('/p-skills')

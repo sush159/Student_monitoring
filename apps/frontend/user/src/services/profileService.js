@@ -18,6 +18,18 @@ const normalize = (student) => {
 export const profileService = {
   get: async () => {
     const studentId = await getStudentDbId()
+    if (!studentId) {
+      // Fall back to building profile from stored login data
+      const storedUser = JSON.parse(localStorage.getItem('student_user') || '{}')
+      return normalize({ 
+        student_id: storedUser.id || '',
+        register_number: storedUser.registerNumber || storedUser.student_id || '',
+        name: storedUser.name || 'Student',
+        email: storedUser.email || '',
+        phone: storedUser.phone || '',
+        github_url: storedUser.github_url || ''
+      })
+    }
     const response = await api.get(`/students/${studentId}`)
     return normalize(response.data || response)
   },

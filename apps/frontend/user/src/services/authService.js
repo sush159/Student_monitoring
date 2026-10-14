@@ -22,11 +22,20 @@ export const authService = {
   },
 
   getCurrentUser: () => {
+    const token = localStorage.getItem('student_token')
+    if (!token) {
+      currentUser = null
+      return null
+    }
     if (currentUser) return currentUser
     const stored = localStorage.getItem('student_user')
     if (stored) {
-      currentUser = JSON.parse(stored)
-      return currentUser
+      try {
+        currentUser = JSON.parse(stored)
+        return currentUser
+      } catch {
+        return null
+      }
     }
     return null
   },

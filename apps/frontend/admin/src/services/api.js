@@ -18,6 +18,13 @@ export async function request(method, path, data = null) {
 
   const res = await fetch(`${BASE_URL}${path}`, opts)
   if (!res.ok) {
+    if (res.status === 401) {
+      localStorage.removeItem('admin_token')
+      localStorage.removeItem('admin_user')
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login'
+      }
+    }
     const err = await res.json().catch(() => ({ message: res.statusText }))
     throw new Error(err.message || 'Request failed')
   }

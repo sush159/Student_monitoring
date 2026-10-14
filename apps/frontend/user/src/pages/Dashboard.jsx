@@ -224,6 +224,11 @@ export default function Dashboard() {
       const anStatus = afternoonRec ? (afternoonRec.status === 'PRESENT' ? 'Present' : 'Absent') : 'Pending'
       
       setTodayAttendance({ forenoon: fnStatus, afternoon: anStatus })
+    })
+    .catch(err => {
+      console.error('Dashboard data load failed:', err)
+    })
+    .finally(() => {
       setLoading(false)
     })
 

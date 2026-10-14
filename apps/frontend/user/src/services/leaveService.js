@@ -17,6 +17,7 @@ const normalize = (leave) => {
 export const leaveService = {
   getAll: async () => {
     const studentId = await getStudentDbId()
+    if (!studentId) return []
     const response = await api.get(`/leave?student_id=${studentId}`)
     const list = Array.isArray(response.data) ? response.data : (response || [])
     return list.map(normalize).sort((a, b) => b.submittedOn.localeCompare(a.submittedOn))

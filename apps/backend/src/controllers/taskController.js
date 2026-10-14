@@ -7,7 +7,9 @@ const getTasks = async (req, res, queryParams = {}) => {
   try {
     const studentId = queryParams.student_id;
     let result;
-    if (studentId) {
+    // Guard: treat missing, 'null', 'undefined', or non-numeric as "no filter"
+    const isValidId = studentId && studentId !== 'null' && studentId !== 'undefined' && !isNaN(parseInt(studentId, 10));
+    if (isValidId) {
       result = await taskService.getTasksByStudentId(studentId);
     } else {
       result = await taskService.getAllTasks();

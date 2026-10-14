@@ -85,6 +85,7 @@ const normalize = (pass) => {
 export const movementService = {
   getAll: async () => {
     const studentId = await getStudentDbId()
+    if (!studentId) return []
     const response = await api.get(`/movement-passes?student_id=${studentId}`)
     const list = Array.isArray(response.data) ? response.data : (response || [])
     return list.map(normalize).sort((a, b) => b.date.localeCompare(a.date))

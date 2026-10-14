@@ -47,6 +47,7 @@ export const activityService = {
 
   getByDate: async (dateStr) => {
     const studentId = await getStudentDbId()
+    if (!studentId) return []
     const response = await api.get(`/activities?date=${dateStr}&student_id=${studentId}`)
     const list = Array.isArray(response.data) ? response.data : (response || [])
     return list.map(normalize)
@@ -54,6 +55,7 @@ export const activityService = {
 
   getByDateRange: async (startDate, endDate) => {
     const studentId = await getStudentDbId()
+    if (!studentId) return []
     const response = await api.get(`/activities?start_date=${startDate}&end_date=${endDate}&student_id=${studentId}`)
     const list = Array.isArray(response.data) ? response.data : (response || [])
     return list.map(normalize)

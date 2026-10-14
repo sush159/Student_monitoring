@@ -19,6 +19,13 @@ export async function request(method, path, data = null) {
 
   const res = await fetch(`${BASE_URL}${path}`, opts)
   if (!res.ok) {
+    if (res.status === 401) {
+      localStorage.removeItem('student_token')
+      localStorage.removeItem('student_user')
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login'
+      }
+    }
     const err = await res.json().catch(() => ({ message: res.statusText }))
     throw new Error(err.message || 'Request failed')
   }
@@ -35,10 +42,19 @@ export const api = {
 
 export async function getStudentDbId() {
   const storedUser = JSON.parse(localStorage.getItem('student_user') || '{}')
+  
+  // 1. First: use student_db_id if already cached (from a previous lookup)
   if (storedUser.student_db_id) {
     return storedUser.student_db_id
   }
+
+  // 2. Second: use student_id directly from the login response
+  //    The login API stores the students table row ID as student_id
+  if (storedUser.student_id) {
+    return String(storedUser.student_id)
+  }
   
+  // 3. Third: fall back to looking up by email from /api/students
   try {
     const email = storedUser.email
     if (email) {
@@ -55,5 +71,8 @@ export async function getStudentDbId() {
   } catch (e) {
     console.error('Failed to resolve student DB ID', e)
   }
-  return '4'
+
+  // No valid student ID found — return null so callers can handle gracefully
+  console.warn('Could not determine student DB ID. User may not be logged in correctly.')
+  return null
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { FileText } from 'lucide-react'
+import { FileText, AlertCircle } from 'lucide-react'
 import LeaveForm from '../components/leave/LeaveForm'
 import LeaveHistory from '../components/leave/LeaveHistory'
 import { leaveService } from '../services/leaveService'
@@ -10,13 +10,18 @@ export default function Leave() {
   const [tab, setTab] = useState(0)
   const [leaves, setLeaves] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
-  useEffect(() => {
-    leaveService.getAll().then(data => {
-      setLeaves(data)
-      setLoading(false)
-    })
-  }, [])
+  const loadLeaves = () => {
+    setLoading(true)
+    setError(null)
+    leaveService.getAll()
+      .then(data => setLeaves(data))
+      .catch(err => setError(err.message || 'Failed to load leave records'))
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(() => { loadLeaves() }, [])
 
   const handleSubmit = async (form) => {
     const newLeave = await leaveService.apply(form)
@@ -28,6 +33,16 @@ export default function Leave() {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="card p-6 border border-red-200 text-center space-y-4 max-w-md mx-auto mt-10">
+        <AlertCircle className="w-8 h-8 text-red-400 mx-auto" />
+        <p className="text-red-500 font-semibold">{error}</p>
+        <button onClick={loadLeaves} className="btn-primary text-xs px-4 py-2">Try Again</button>
       </div>
     )
   }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { MapPin } from 'lucide-react'
+import { MapPin, AlertCircle } from 'lucide-react'
 import MovementPassForm from '../components/movement/MovementPassForm'
 import MovementPassHistory from '../components/movement/MovementPassHistory'
 import { movementService } from '../services/movementService'
@@ -10,13 +10,18 @@ export default function MovementPass() {
   const [tab, setTab] = useState(0)
   const [passes, setPasses] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
-  useEffect(() => {
-    movementService.getAll().then(data => {
-      setPasses(data)
-      setLoading(false)
-    })
-  }, [])
+  const loadPasses = () => {
+    setLoading(true)
+    setError(null)
+    movementService.getAll()
+      .then(data => setPasses(data))
+      .catch(err => setError(err.message || 'Failed to load movement passes'))
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(() => { loadPasses() }, [])
 
   const handleSubmit = async (form) => {
     const newPass = await movementService.create(form)
@@ -28,6 +33,31 @@ export default function MovementPass() {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  if (error) {
+    const isAuth = error.toLowerCase().includes('token') || error.toLowerCase().includes('auth') || error.toLowerCase().includes('unauthorized')
+    return (
+      <div className="card p-6 border border-red-200 text-center space-y-4 max-w-md mx-auto mt-10">
+        <AlertCircle className="w-8 h-8 text-red-400 mx-auto" />
+        <p className="text-red-500 font-semibold">{error}</p>
+        <div className="flex items-center justify-center gap-3">
+          <button onClick={loadPasses} className="btn-primary text-xs px-4 py-2">Try Again</button>
+          {isAuth && (
+            <button
+              onClick={() => {
+                localStorage.removeItem('student_token')
+                localStorage.removeItem('student_user')
+                window.location.href = '/login'
+              }}
+              className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium text-xs px-4 py-2 rounded-xl transition-colors"
+            >
+              Log In Again
+            </button>
+          )}
+        </div>
       </div>
     )
   }

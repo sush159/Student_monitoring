@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Search } from 'lucide-react'
+import { Search, AlertCircle } from 'lucide-react'
 import PSkillCard from '../components/pskill/PSkillCard'
 import PSkillLevelSelector from '../components/pskill/PSkillLevelSelector'
 import EmptyState from '../components/common/EmptyState'
@@ -8,15 +8,20 @@ import { pskillService } from '../services/pskillService'
 export default function PSkills() {
   const [skills, setSkills] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [selectedSkill, setSelectedSkill] = useState(null)
   const [search, setSearch] = useState('')
 
-  useEffect(() => {
-    pskillService.getAll().then(data => {
-      setSkills(data)
-      setLoading(false)
-    })
-  }, [])
+  const loadSkills = () => {
+    setLoading(true)
+    setError(null)
+    pskillService.getAll()
+      .then(data => setSkills(data))
+      .catch(err => setError(err.message || 'Failed to load skills'))
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(() => { loadSkills() }, [])
 
   const handleSave = async (id, updates) => {
     const updated = await pskillService.update(id, updates)
@@ -34,6 +39,16 @@ export default function PSkills() {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="card p-6 border border-red-200 text-center space-y-4 max-w-md mx-auto mt-10">
+        <AlertCircle className="w-8 h-8 text-red-400 mx-auto" />
+        <p className="text-red-500 font-semibold">{error}</p>
+        <button onClick={loadSkills} className="btn-primary text-xs px-4 py-2">Try Again</button>
       </div>
     )
   }
